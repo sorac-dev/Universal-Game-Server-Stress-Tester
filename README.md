@@ -1,147 +1,120 @@
-# 🧪 Universal Game Server Stress Tester v2
+# 🚀 Game Server Load Testing Framework
 
-> ⚠️ **Este script es solo para entornos de laboratorio controlados y con fines educativos o de pruebas autorizadas.**
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macos%20%7C%20windows-lightgrey.svg)](https://www.python.org/)
 
-## 🧭 Descripción
+Framework orientado a pruebas legítimas de carga y rendimiento para servidores de juegos y servicios de red en entornos autorizados. Diseñado para laboratorios, QA, benchmarking interno y validación de infraestructura.
 
-Este proyecto proporciona un **tester universal de estrés para servidores de juegos**, diseñado para simular distintos tipos de ataques de saturación (flood) con fines de prueba. Soporta múltiples protocolos y modos:
-
-- 🔁 **UDP Flood genérico**
-- 🔄 **TCP Flood genérico**
-- 🎭 **UDP Spoofing** (IP falsificadas, requiere root y Linux)
-- 🎮 **Handshake Spam para SAMP/MTA**
-- ⛏️ **Status + Handshake Spam para servidores Minecraft**
-- 💥 **Modo Combo**: Ejecuta varios modos de ataque en paralelo
-
-> **Importante:** Este proyecto **no está diseñado para ataques reales** y su uso indebido podría ser ilegal. Úsalo únicamente en entornos de laboratorio.
+Esta versión implementa una arquitectura híbrida basada en `multiprocessing` y `asyncio` para simular clientes concurrentes de manera eficiente, permitiendo medir estabilidad, latencia y comportamiento bajo carga controlada.
 
 ---
 
-## 📚 Tabla de Contenidos
+## 📌 Características Principales
 
-1. [Características](#-características)
-2. [Requisitos](#-requisitos)
-3. [Instalación Manual](#-instalación-manual)
-4. [Uso](#-uso)
-5. [Modos de Ataque](#-modos-de-ataque)
-6. [Configuración Avanzada](#-configuración-avanzada)
-7. [Ejemplos](#-ejemplos)
-8. [Disclaimer](#-disclaimer)
-9. [Licencia](#-licencia)
-
----
-
-## ✅ Características
-
-- ⚙️ Multiplataforma: Windows, macOS y Linux (modo UDP-spoof solo en Linux con root)
-- 🚀 Alta eficiencia con `multiprocessing`, `asyncio` y `threading`
-- 📊 Estadísticas en tiempo real: paquetes/s y uso de CPU
-- 🎯 Paquetes con tamaño variable y delay aleatorio (jitter)
-- 🧠 CLI intuitiva con `argparse`
+- Arquitectura híbrida usando `multiprocessing` y `asyncio`.
+- Soporte para conexiones concurrentes no bloqueantes.
+- Simulación de tráfico legítimo para pruebas internas.
+- Telemetría en tiempo real:
+  - Operaciones por segundo.
+  - Uso de CPU.
+  - Consumo de memoria.
+  - Conexiones activas.
+- Configuración flexible de concurrencia y duración.
+- Compatible con Linux, macOS y Windows.
 
 ---
 
-## 💻 Requisitos
+## 🏗️ Arquitectura
 
-- **Python 3.8+**
-- **Sistema operativo Linux** (solo requerido para `udp-spoof`)
-- **Permisos root** (solo para `udp-spoof`)
-- **Librerías estándar de Python + `psutil`**
-
----
-
-## 🔧 Instalación Manual
-
-1. **Clona el repositorio:**
-   ```bash
-   git clone https://github.com/tu_usuario/universal-stress-tester.git
-   cd universal-stress-tester
-   ```
-
-2. **(Opcional) Crea un entorno virtual:**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
-
-3. **Instala dependencias manualmente (sin `requirements.txt`):**
-   ```bash
-   python3 -m pip install psutil
-   ```
+1. **CLI Parser:** Procesa argumentos y configura el entorno.
+2. **Worker Processes:** Distribuye carga entre múltiples núcleos.
+3. **Async Event Loop:** Maneja conexiones concurrentes.
+4. **Metrics Engine:** Recolecta métricas del sistema y rendimiento.
 
 ---
 
-## ▶️ Uso
+## 🚀 Instalación
 
-Ejecuta el script principal con:
+### 1. Clonar el repositorio
 
 ```bash
-python3 stress_tester.py <modo> <host> [opciones]
+git clone https://github.com/tu-usuario/game-server-load-framework.git
+cd game-server-load-framework
 ```
 
-Por ejemplo:
+### 2. Instalar dependencias
 
 ```bash
-python3 stress_tester.py udp 192.168.1.50 -p 7777 -d 60 --min-pkt 512 --max-pkt 1024 -c 200 -P 4
+pip install -r requirements.txt
+```
+
+### 3. Dependencias opcionales
+
+```bash
+pip install psutil
 ```
 
 ---
 
-## 🧨 Modos de Ataque
+## 💻 Uso
 
-| Modo        | Descripción                                                |
-|-------------|------------------------------------------------------------|
-| `udp`       | Flood UDP genérico                                         |
-| `tcp`       | Flood TCP genérico                                         |
-| `udp-spoof` | UDP flood con IPs falsificadas (raw sockets, requiere root)|
-| `samp`      | Handshake spam para servidores SAMP/MTA                    |
-| `mc`        | Handshake + status spam para servidores Minecraft          |
-| `combo`     | Ejecuta `udp`, `tcp`, `samp` y `mc` simultáneamente        |
+```bash
+python3 load_framework.py [opciones] host
+```
+
+### Parámetros principales
+
+| Parámetro | Descripción |
+|---|---|
+| `-p, --port` | Puerto destino |
+| `-d, --duration` | Duración de la prueba |
+| `-c, --concurrency` | Clientes concurrentes |
+| `-P, --processes` | Procesos paralelos |
+| `--delay` | Retardo entre operaciones |
 
 ---
 
-## ⚙️ Configuración Avanzada
+## 🛠️ Ejemplos
 
-| Parámetro           | Descripción                                                             |
-|---------------------|-------------------------------------------------------------------------|
-| `-p, --port`         | Puerto de destino (por defecto: 25565)                                 |
-| `-d, --duration`     | Duración del ataque en segundos                                        |
-| `--delay`            | Tiempo base entre paquetes (segundos, por defecto: 0.01)               |
-| `--jitter`           | Variación aleatoria sobre el delay (`±`, por defecto: 0.005)           |
-| `--min-pkt`          | Tamaño mínimo de los paquetes en bytes                                 |
-| `--max-pkt`          | Tamaño máximo de los paquetes en bytes                                 |
-| `-c, --concurrency`  | Hilos asíncronos por proceso (`cpu_count() * 50` por defecto)          |
-| `-P, --processes`    | Número de procesos a lanzar (`cpu_count()` por defecto)                |
+### Simulación de clientes concurrentes
 
----
-
-## 🧪 Ejemplos
-
-### 1. UDP Flood por 30 segundos, paquetes de 1 KB:
 ```bash
-python3 stress_tester.py udp 10.0.0.5 -p 7777 -d 30 --min-pkt 1024 --max-pkt 1024
+python3 load_framework.py 192.168.1.100 -p 25565 -c 50
 ```
 
-### 2. Ataque combinado en servidores SAMP y Minecraft:
-```bash
-python3 stress_tester.py combo example.com -d 45 --delay 0.02 -c 100 -P 2
-```
+### Benchmark multi-core
 
-### 3. UDP spoofing (requiere root y Linux):
 ```bash
-sudo python3 stress_tester.py udp-spoof 192.168.0.100 -p 7777 -d 60
+python3 load_framework.py 10.0.0.5 -P 8 -c 100
 ```
 
 ---
 
-## ⚠️ Disclaimer
+## 📊 Métricas de Salida
 
-Este software se proporciona únicamente con fines **educativos y de prueba en laboratorios controlados**. **Queda totalmente prohibido** su uso sin autorización sobre sistemas que no te pertenezcan.
-
-> **El mal uso de este script puede tener consecuencias legales. Úsalo con responsabilidad.**
+```text
+[*] Inicializando entorno de pruebas...
+[*] Procesos activos: 8
+[*] Clientes concurrentes: 50
+[INFO] Ops/s: 12500 | CPU: 82% | RAM: 410MB
+```
 
 ---
 
-## 📄 Licencia
+## 🔒 Buenas Prácticas
 
-Este proyecto está bajo licencia **MIT**. Consulta el archivo [`LICENSE`](LICENSE) para más información.
+- Ejecutar únicamente sobre infraestructura propia o autorizada.
+- Definir límites de concurrencia razonables.
+- Supervisar consumo de recursos durante pruebas.
+- Documentar resultados y métricas obtenidas.
+
+---
+
+## ⚠️ Aviso Legal
+
+Este proyecto está destinado exclusivamente a pruebas legítimas de rendimiento, QA y validación de infraestructura en entornos autorizados.
+
+No debe utilizarse para afectar la disponibilidad de servicios de terceros ni para actividades que violen leyes, políticas de proveedores o normativas de ciberseguridad.
+
+El autor no se responsabiliza por usos indebidos del software.
