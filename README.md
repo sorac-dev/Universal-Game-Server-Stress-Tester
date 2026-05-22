@@ -1,18 +1,22 @@
-# 🚀 Game Server Load Testing Framework
+# 🚀 Universal Game Server Load Testing Framework v3
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-linux%20%7C%20macos%20%7C%20windows-lightgrey.svg)](https://www.python.org/)
 
-Framework orientado a pruebas legítimas de carga y rendimiento para servidores de juegos y servicios de red en entornos autorizados. Diseñado para laboratorios, QA, benchmarking interno y validación de infraestructura.
+Framework orientado a pruebas legítimas de carga, benchmarking y validación de infraestructura para servidores de juegos y servicios de red en entornos autorizados. Diseñado para laboratorios, QA, auditorías internas y desarrollo de mecanismos de resiliencia y mitigación.
 
-Esta versión implementa una arquitectura híbrida basada en `multiprocessing` y `asyncio` para simular clientes concurrentes de manera eficiente, permitiendo medir estabilidad, latencia y comportamiento bajo carga controlada.
+Esta versión implementa una arquitectura híbrida basada en `multiprocessing`, `asyncio` y sockets no bloqueantes, permitiendo generar carga controlada de alta concurrencia para medir estabilidad, latencia, throughput y comportamiento bajo presión operativa.
 
 ---
 
 ## 📌 Características Principales
 
-- Arquitectura híbrida usando `multiprocessing` y `asyncio`.
+- Arquitectura híbrida usando `multiprocessing`, `asyncio` y sockets no bloqueantes.
+- Escalado multi-core para aprovechar todos los núcleos disponibles.
+- Pools de memoria precalculados para reducir overhead del GC.
+- Sistema de telemetría en tiempo real por proceso.
+- Simulación de conexiones concurrentes para pruebas internas controladas.
 - Soporte para conexiones concurrentes no bloqueantes.
 - Simulación de tráfico legítimo para pruebas internas.
 - Telemetría en tiempo real:
@@ -25,12 +29,13 @@ Esta versión implementa una arquitectura híbrida basada en `multiprocessing` y
 
 ---
 
-## 🏗️ Arquitectura
+## 🏗️ Arquitectura y Flujo de Ejecución
 
-1. **CLI Parser:** Procesa argumentos y configura el entorno.
-2. **Worker Processes:** Distribuye carga entre múltiples núcleos.
-3. **Async Event Loop:** Maneja conexiones concurrentes.
-4. **Metrics Engine:** Recolecta métricas del sistema y rendimiento.
+1. **CLI Parser:** Procesa argumentos y configura el entorno de ejecución.
+2. **Master Processes:** Distribuye workers entre múltiples núcleos para evitar limitaciones del GIL.
+3. **Async Event Loop:** Gestiona conexiones y sockets concurrentes de forma eficiente.
+4. **Memory Pools:** Utiliza payloads y delays precalculados para minimizar asignaciones dinámicas.
+5. **Metrics Engine:** Recolecta métricas de rendimiento, CPU y throughput.
 
 ---
 
@@ -77,13 +82,13 @@ python3 load_framework.py [opciones] host
 
 ## 🛠️ Ejemplos
 
-### Simulación de clientes concurrentes
+### Simulación de clientes concurrentes (Laboratorio)
 
 ```bash
 python3 load_framework.py 192.168.1.100 -p 25565 -c 50
 ```
 
-### Benchmark multi-core
+### Benchmark multi-core de infraestructura
 
 ```bash
 python3 load_framework.py 10.0.0.5 -P 8 -c 100
@@ -111,10 +116,10 @@ python3 load_framework.py 10.0.0.5 -P 8 -c 100
 
 ---
 
-## ⚠️ Aviso Legal
+## ⚠️ Aviso Legal y Uso Responsable
 
 Este proyecto está destinado exclusivamente a pruebas legítimas de rendimiento, QA y validación de infraestructura en entornos autorizados.
 
-No debe utilizarse para afectar la disponibilidad de servicios de terceros ni para actividades que violen leyes, políticas de proveedores o normativas de ciberseguridad.
+No debe utilizarse contra infraestructura de terceros sin autorización explícita. El uso indebido de herramientas de generación de carga o saturación puede violar leyes de ciberseguridad, términos de servicio y regulaciones internacionales.
 
 El autor no se responsabiliza por usos indebidos del software.
